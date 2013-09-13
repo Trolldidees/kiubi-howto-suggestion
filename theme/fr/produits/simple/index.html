@@ -1,0 +1,155 @@
+<!-- 
+Template du détail d'un produit "Produit simple"
+-->
+
+<!-- BEGIN: main -->
+<script type="text/javascript">
+$(function(){
+	var c = $.cookie('pv');
+	if(c == null) c = [];
+	else c = c.split('-');
+	if($.inArray('{produit_id}', c)==-1) {
+		c.push({produit_id});
+		if(c.length>3) {
+			c = c.slice(-3);
+		}
+		$.cookie('pv', c.join('-'), {path:'/'});
+	}
+});
+</script>
+<article class="produit_detail">
+  <!-- BEGIN: illustrations -->
+  <div class="produit_images gallery">
+    <figure><a href="{url_illustration_principale_g_vignette}" title="{intitule_produit|htmlentities} - Cliquez pour agrandir" class="illustration"  data-gal="prettyPhoto[1]"><img src="{url_illustration_principale_g_vignette}" alt="{intitule_produit|htmlentities}"  itemprop="image" /></a></figure>
+    <div class="liste_images">
+      <!-- BEGIN: illustration -->
+      <figure><a href="{url_illustration_g_vignette}" title="{intitule_produit|htmlentities} - Cliquez pour agrandir"  data-gal="prettyPhoto[1]"><img src="{url_illustration_miniature}" alt="{intitule_produit|htmlentities}" /></a></figure>
+      <!-- END: illustration -->
+    </div>
+  </div>
+  <!-- END: illustrations -->
+  <!-- BEGIN: noillustrations -->
+  <div class="produit_images gallery">
+    <figure><img src="{racine}/{theme}/fr/images/produit.gif" alt="{intitule_produit|htmlentities}" /></figure>
+  </div>
+  <!-- END: noillustrations -->
+  <div class="post_produit">
+    <header class="post_header">
+      <h1><span>{intitule_produit}</span></h1>
+    </header>
+    <!-- BEGIN:tags -->
+    <p class="tags">{tags}</p>
+    <!-- END:tags -->
+    <!-- BEGIN:non_disponible -->
+    <p class="alerte">Disponible à partir du
+      <time class="post_date"  datetime="{annee_disponibilite}-{num_mois_disponibilite}-{num_jour_disponibilite}">{num_jour_disponibilite}/{num_mois_disponibilite}/{annee_disponibilite}</time>
+    </p>
+    <!-- END:non_disponible -->
+    <!-- BEGIN:en_stock -->
+    <p class="en_stock" itemprop="availability" content="in_stock">En stock</p>
+    <!-- END:en_stock -->
+    <!-- BEGIN:rupture_partielle -->
+    <p class="alerte">Certaines variantes sont indisponibles</p>
+    <!-- END:rupture_partielle -->    
+    <!-- BEGIN:rupture -->
+    <p class="alerte">Produit en rupture de stock</p>
+    <!-- END:rupture -->
+    <!-- BEGIN: marque -->
+    <p>Marque : <strong>{marque}</strong></p>
+    <!-- END: marque -->
+    <p class="prix"><span class="<!-- BEGIN:prix_promo -->promo<!-- END:prix_promo -->">{prix}</span>
+      <!-- BEGIN:prix_barre -->
+      <del>{prix_barre}</del>
+      <!-- END:prix_barre -->
+    </p>
+    <div class="produit_infos">
+      <!-- BEGIN:accroche -->
+      <p class="accroche">{accroche} [<a href="#desc">Plus d'infos</a>]</p>
+      <!-- END:accroche -->
+      <form id="fp{serial}_{produit_id}" method="post" action="{baseLangue}/ecommerce/panier.html">
+        <!-- BEGIN:variantes -->
+        <ul class="variantes">
+          <!-- BEGIN:variante -->
+          <li>
+            <!-- BEGIN:illustration -->
+             
+            <!-- <img src="{url_illustration_miniature}" alt="{intitule_variante|htmlentities}"/> -->
+            <!-- END:illustration -->
+            <!-- BEGIN:en_stock -->
+            <input name="vid" type="radio" value="{variante_id}" id="variante{produit_id}_{variante_id}" {checked}/>
+            <label for="variante{produit_id}_{variante_id}" itemprop="identifier" >
+            {intitule_variante} - {prix_variante}
+            <!-- BEGIN:prix_barre -->
+            &nbsp;<del>{prix_variante_barre}</del>
+            <!-- END:prix_barre -->
+            <!-- END:en_stock -->
+            <!-- BEGIN:rupture -->
+            <input name="vid" type="radio" value="{variante_id}" id="variante{produit_id}_{variante_id}" disabled="disabled"/>
+            <label for="variante{produit_id}_{variante_id}" class="rupture" itemprop="identifier">{intitule_variante} - {prix_variante}
+              <!-- BEGIN:prix_barre -->
+              &nbsp;<del>{prix_variante_barre}</del>
+              <!-- END:prix_barre -->
+              <!-- END:rupture -->
+              <!-- BEGIN: eco_taxe -->
+              <span class="eco_taxe">dont {eco_taxe} d'&eacute;co-part</span>
+              <!-- END: eco_taxe -->
+              <!-- BEGIN: etat -->
+              | Etat : <strong>{etat}</strong>
+              <!-- END: etat -->
+			  <!-- BEGIN:reference -->
+			  | Référence : <strong>{reference}</strong>
+			  <!-- END:reference -->
+              <!-- BEGIN: code_barre -->
+              |    Code barre : <strong>{code_barre}</strong>
+              <!-- END: code_barre -->
+            </label>
+          </li>
+          <!-- END:variante -->
+        </ul>
+        <!-- END:variantes -->
+        <!-- BEGIN:panier-->
+        <!-- <a href="javascript:void(0);" onclick="Ssubmit('fp{serial}_{produit_id}')" class="bt_panier" title="Ajouter au panier">Ajouter au panier</a> -->
+        <div class="ajout_panier">Quantit&eacute; :
+          <select name="qt">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+          </select>
+          <input type="submit" class="bt_panier" value="Ajouter au panier" />
+        </div>
+        <!-- END:panier-->
+        <input type="hidden" name="pid" value="{produit_id}" />
+        <input type="hidden" name="act" value="addP" />
+        <input type="hidden" name="ctl" value="{ctl}" />
+      </form>
+    </div>
+    
+  </div>
+  <ul class="bt_sociaux">
+      <li>
+        <iframe src="http://www.facebook.com/plugins/like.php?href=http%3A%2F%2F{domaine|rawurlencode}{canonical|rawurlencode}&amp;layout=button_count&amp;show_faces=true&amp;width=87&amp;action=like&amp;font&amp;colorscheme=light&amp;" scrolling="no" frameborder="0" allowTransparency="true" style="border:none; overflow:hidden; width:117px; height:21px"></iframe>
+      </li>
+      <li><a href="https://twitter.com/share" class="twitter-share-button" data-url="http://{domaine}{canonical}" data-count="horizontal" data-lang="fr" data-text="{titre}" style="display: block;">Tweet</a></li>
+      <li>
+        <g:plusone size="medium" href="http://{domaine}{canonical}"></g:plusone>
+      </li>
+    </ul>
+  <!-- BEGIN: description -->
+  <article class="desc" id="desc">
+    <h2>&quot;{intitule_produit}&quot; en d&eacute;tails...</h2>
+    <div itemprop="description">{description}</div>
+  </article>
+  <!-- END: description -->
+  <script type="text/javascript" src="http://platform.twitter.com/widgets.js"></script>
+  <script type="text/javascript" src="https://apis.google.com/js/plusone.js">
+  {lang: 'fr'}
+</script>
+  </article>
+  <!-- END: main -->

@@ -1,0 +1,135 @@
+<!-- 
+Template du Widget "Panier"
+-->
+
+<!-- BEGIN:main -->
+<div class="panier">
+	<!-- BEGIN:nonidentifie -->
+	<p class="login"><a id="api-link-login" href="{baseLangue}/compte/">Se connecter</a>
+		<span style="display:none;"> : 
+			<label for="api-login">Identifiant : </label><input type="text" class="field" id="api-login" size="10"/> 
+			<label for="api-pwd">Mot de passe : </label><input type="password" class="field" id="api-pwd" size="10"/>
+			<input id="api-submit" type="button" class="submit" style="padding:2px;" value="Ok" />
+		</span>
+	</p>
+	<script type="text/javascript">
+		$(function(){
+			// Interception du clic sur le lien "Se connecter" 
+			// et affichage du mini formulaire de connexion
+			$(document).on('click', '#api-link-login', function(){
+				$('p.login > span').toggle();
+				return false;
+			});
+			
+			// Login sur le click du bouton du mini formulaire
+			$(document).on('click', "#api-submit", function(){
+				var login = $("#api-login").val();
+				var pwd = $("#api-pwd").val();
+				
+				// Pas de requête si aucun login ou aucun mot de passe
+				if(login == '' || pwd == '') {
+					$("p.login input.field").css('border', '2px solid red');
+					return;
+				}
+				
+				// Connexion à kiubi
+				var query = kiubi.login(login, pwd);
+				
+				// En cas de connexion réussie
+				query.done(function(meta, data){
+					$(".login").hide().after('<p class="compte"><a href="{baseLangue}/compte/">'+data.firstname+' '+data.lastname+'</a> - <a id="api-link-logout" href="{baseLangue}/compte/logout.html">D&eacute;connexion</a></p>');
+					
+					getOrders(data.user_id);
+				});
+				
+				// En cas de connexion échouée
+				query.fail(function(meta, error){
+					$("p.login input.field").css('border', '2px solid red');
+				}); 				
+			});
+			
+			// interception du clic sur le lien "Déconnexion"
+			$(document).on('click', '#api-link-logout', function(){
+				
+				// Déconnexion de l'utilisateur courant
+				kiubi.logout().done(function(meta, data){
+					$("p.compte").hide();
+					$("p.login").show();
+					$("p.login span").hide();
+					$("p.login input.field").removeAttr('style');
+					$("#api-pwd").val('');
+				});
+				return false;
+			});
+		});
+	</script>
+	<!-- END:nonidentifie -->
+	<!-- BEGIN:identifie -->
+	<p class="compte"><a href="{baseLangue}/compte/">{prenom} {nom}</a> - <a href="{baseLangue}/compte/logout.html">D&eacute;connexion</a></p>
+	<script type="text/javascript">
+		$(function(){
+			getOrders({CLIENT.client_id});
+		});
+	</script>
+	<!-- END:identifie -->
+	<p class="panier_link"><a href="{baseLangue}/ecommerce/panier.html" title="Détail du panier">{nb_produits} article{pluriel_produits} - {total}</a></p>
+</div>
+<script type="text/javascript">
+getOrders = function(id) {
+	if($.cookie('nosuggestion')=='1') return;
+	kiubi.users.getOrders(id).done(function(meta, data){
+		if(data.length) {
+			$('p.compte > a:first').before('Etat de votre dernière commande : '+data[0].status+' - ');
+
+			kiubi.users.getOrder(data[0].id).done(function(meta, data){
+				var products = [];
+				for(var i=0; i<data.items.length; i++) {
+					if(data.items[i].product_id)
+						products.push(data.items[i].product_id);
+				}
+				if(products.length) {
+					var linked = [], queries = [];
+					for(var i=0; i<products.length && linked.length<3; i++) {
+						queries.push(kiubi.catalog.getLinkedProducts(products[i], {extra_fields:'price_label,variants'}).done(function(meta, data){
+							for(var p=0; p<data.length; p++) {
+								if(linked.length<3 && $.inArray(data[p].id, products)==-1) {
+									linked.push(data[p]);
+								}
+							}							
+						}));						
+					}					
+					$.when.apply($, queries).done(function(){						
+						if(linked.length) {
+							var html = '<div style="display:none;" id="suggestions"><br/><span style="float:right" id="closesuggestion">X</span><div><strong>Voici une liste de produits pour compléter votre dernière commande :</strong><br/>';
+							for(var p=0; p<linked.length; p++) {
+								html += '<div style="float:left;width:'+(100/linked.length)+'%">';
+								html += '<h4><a href="'+linked[p].url+'">'+linked[p].name+'</a> - '+linked[p].price_min_inc_vat_label+'</h4>';
+								html += '<a style="float:left;margin-right:10px;" href="'+linked[p].url+'"><img src="'+linked[p].main_thumb.url_miniature+'"/></a>';
+								html += '<div>'+linked[p].header+'</div>';
+								html += '<input class="bouton addtocart" type="submit" data-id="'+linked[p].variants[0].id+'" value="Ajouter au panier"/>';
+								html += '</div>';
+							}
+							html += '</div></div>';
+							$('.menu_header').append(html);
+							$('#suggestions').slideDown('slow');
+							$('.addtocart').click(function(){
+								var me = $(this);
+								me.next('p').remove();
+								kiubi.cart.addItem($(this).data('id'), '+1', null, {extra_fields:'price_label'}).done(function(meta, data){
+									me.after('<p>Produit ajouté au panier !</p>');
+									$('.panier_link a').html(data.cart.items_count+' article'+(data.cart.items_count>1?'s':'')+' - '+data.cart.price_total_inc_vat_label);
+								});
+							});
+							$("#closesuggestion").click(function(){
+								$('#suggestions').slideUp('fast');
+								$.cookie('nosuggestion', '1');
+							});
+						}
+					});					
+				}
+			});
+		}						
+	});
+}	
+</script>
+<!-- END:main -->

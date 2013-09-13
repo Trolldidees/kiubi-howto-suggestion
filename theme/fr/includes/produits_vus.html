@@ -1,0 +1,19 @@
+<script type="text/javascript">
+$(function(){
+	var c = $.cookie('pv');
+	if(c !== null) {
+		c = c.split('-');
+		for(var i=0; i<c.length; i++) {
+			kiubi.catalog.getProduct(c[i], {extra_fields:'price_label'}).done(function(meta, data){
+				var html = '<div style="margin-bottom:15px;">';
+				html += '<h2><a href="'+data.url+'">'+data.name+'</a></h2>';
+				html += '<a href="'+data.url+'"><img src="'+data.main_thumb.url_miniature+'"/></a>';
+				html += '<br/>Prix : '+data.price_min_inc_vat_label;
+				html += '</div>';				
+				$("#recent-view").show().append(html);			
+			});
+		}
+	}
+});	
+</script>
+<article class="block" id="recent-view" style="display:none;"><h1>Derniers produits vus</h1></article>
